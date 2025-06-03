@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K8s Simulator - Plataforma Educativa</title>
+    <link rel="stylesheet" href="src/css/styles.css">
+    <link rel="stylesheet" href="src/css/networking.css">
+    <!-- D3.js para el gráfico de topología -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Simulador de Kubernetes</h1>
+            <p>Plataforma educativa para aprender infraestructura y orquestación de contenedores - ¡Con módulo de
+                Networking y guardado de configuraciones integrado!</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('clusters')">🏗️ Clusters</button>
+            <button class="tab" onclick="showTab('nodes')">🖥️ Nodos</button>
+            <button class="tab" onclick="showTab('services')">⚙️ Servicios</button>
+            <button class="tab" onclick="showTab('networking')">🌐 Networking</button>
+            <button class="tab" onclick="showTab('configurations')">💾 Configuraciones</button>
+            <button class="tab" onclick="showTab('monitoring')">📊 Monitoreo</button>
+            <button class="tab" onclick="showTab('testing')">🧪 Testing</button>
+        </div>
+
+        <div class="tab-content">
+            <!-- CLUSTERS TAB -->
+            <div id="clusters" class="tab-panel active">
+                <div class="section">
+                    <h3>Crear Nuevo Cluster</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nombre del Cluster</label>
+                            <input type="text" id="clusterName" placeholder="ej: production-cluster">
+                        </div>
+                        <div class="form-group">
+                            <label>Región</label>
+                            <select id="clusterRegion">
+                                <option value="us-east-1">US East (N. Virginia)</option>
+                                <option value="us-west-2">US West (Oregon)</option>
+                                <option value="eu-west-1">Europe (Ireland)</option>
+                                <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Versión de Kubernetes</label>
+                            <select id="k8sVersion">
+                                <option value="1.28">1.28 (Latest)</option>
+                                <option value="1.27">1.27</option>
+                                <option value="1.26">1.26</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Cluster</label>
+                            <select id="clusterType">
+                                <option value="managed">Managed (EKS/GKE)</option>
+                                <option value="self-managed">Self-Managed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="createCluster()">Crear Cluster</button>
+                </div>
+
+                <div class="section">
+                    <h3>Clusters Activos</h3>
+                    <div id="clustersList">
+                        <div class="empty-state">
+                            <div style="font-size: 4rem; margin-bottom: 20px; opacity: 0.3;">🏗️</div>
+                            <p>No hay clusters creados. ¡Crea tu primer cluster para comenzar!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONFIGURATIONS TAB -->
+            <div id="configurations" class="tab-panel">
+                <div class="section configurations-section">
+                    <h3>💾 Gestión de Configuraciones</h3>
+                    <p>Guarda y carga configuraciones completas de tu infraestructura K8s. Incluye clusters, nodos,
+                        servicios y networking.</p>
+
+                    <div class="config-stats">
+                        <div class="config-stat-card">
+                            <div class="config-stat-value" id="totalConfigs">0</div>
+                            <div class="config-stat-label">Configuraciones</div>
+                        </div>
+                        <div class="config-stat-card">
+                            <div class="config-stat-value" id="storageUsed">0 KB</div>
+                            <div class="config-stat-label">Almacenamiento</div>
+                        </div>
+                        <div class="config-stat-card">
+                            <div class="config-stat-value" id="lastSaved">Nunca</div>
+                            <div class="config-stat-label">Último Guardado</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Acciones Rápidas</h3>
+                    <div class="config-actions">
+                        <button class="btn btn-config-primary" onclick="showSaveConfigModal()">💾 Guardar Configuración
+                            Actual</button>
+                        <button class="btn btn-config-secondary" onclick="ConfigurationsManager.openLoadModal()">📂
+                            Cargar Configuración</button>
+
+                        <div class="file-input-wrapper">
+                            <input type="file" id="importConfigFile" accept=".json"
+                                onchange="handleConfigImport(this.files[0])">
+                            <button class="file-input-button">📁 Importar desde Archivo</button>
+                        </div>
+
+                        <button class="btn btn-secondary" onclick="exportAllConfigurations()">📤 Exportar Todas</button>
+                        <button class="btn btn-danger" onclick="clearAllConfigurations()">🗑️ Limpiar Todo</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Configuraciones Guardadas</h3>
+                    <div id="configurationsList">
+                        <div class="empty-state">
+                            <div style="font-size: 4rem; margin-bottom: 20px; opacity: 0.3;">💾</div>
+                            <p>No hay configuraciones guardadas. Guarda tu primera configuración para poder reutilizarla
+                                después.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NODES TAB -->
+            <div id="nodes" class="tab-panel">
+                <div class="section">
+                    <h3>Agregar Nuevo Nodo</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Cluster Destino</label>
+                            <select id="nodeCluster">
+                                <option value="">Seleccionar cluster...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Instancia</label>
+                            <select id="nodeType">
+                                <option value="t3.medium">t3.medium (2 vCPU, 4GB RAM)</option>
+                                <option value="t3.large">t3.large (2 vCPU, 8GB RAM)</option>
+                                <option value="c5.large">c5.large (2 vCPU, 4GB RAM)</option>
+                                <option value="m5.large">m5.large (2 vCPU, 8GB RAM)</option>
+                                <option value="m5.xlarge">m5.xlarge (4 vCPU, 16GB RAM)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nombre del Nodo</label>
+                            <input type="text" id="nodeName" placeholder="ej: worker-node-1">
+                        </div>
+                        <div class="form-group">
+                            <label>Zona de Disponibilidad</label>
+                            <select id="nodeAZ">
+                                <option value="a">Zona A</option>
+                                <option value="b">Zona B</option>
+                                <option value="c">Zona C</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="createNode()">Agregar Nodo</button>
+                </div>
+
+                <div class="section">
+                    <h3>Nodos Activos</h3>
+                    <div id="nodesList">
+                        <div class="empty-state">
+                            <div style="font-size: 4rem; margin-bottom: 20px; opacity: 0.3;">🖥️</div>
+                            <p>No hay nodos creados. Primero crea un cluster y luego agrega nodos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SERVICES TAB -->
+            <div id="services" class="tab-panel">
+                <div class="section">
+                    <h3>Desplegar Nueva Aplicación</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Cluster Destino</label>
+                            <select id="serviceCluster">
+                                <option value="">Seleccionar cluster...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nombre del Servicio</label>
+                            <input type="text" id="serviceName" placeholder="ej: api-backend">
+                        </div>
+                        <div class="form-group">
+                            <label>Tecnología</label>
+                            <select id="serviceTech">
+                                <option value="nodejs">Node.js</option>
+                                <option value="python">Python</option>
+                                <option value="golang">Go</option>
+                                <option value="rust">Rust</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Aplicación</label>
+                            <select id="serviceType">
+                                <option value="backend">Backend API</option>
+                                <option value="frontend">Frontend</option>
+                                <option value="microservice">Microservicio</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Réplicas Mínimas</label>
+                            <input type="number" id="minReplicas" value="1" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Réplicas Máximas</label>
+                            <input type="number" id="maxReplicas" value="10" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>CPU Límite (%)</label>
+                            <input type="number" id="cpuLimit" value="80" min="1" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label>RAM Límite (MB)</label>
+                            <input type="number" id="ramLimit" value="512" min="128">
+                        </div>
+                        <div class="form-group">
+                            <label>Tiempo de Respuesta (ms)</label>
+                            <input type="number" id="responseTime" value="100" min="10">
+                        </div>
+                        <div class="form-group">
+                            <label>Capacidad de Procesamiento (req/s)</label>
+                            <input type="number" id="throughput" value="100" min="1">
+                        </div>
+                    </div>
+                    <button class="btn" onclick="deployService()">Desplegar Servicio</button>
+                </div>
+
+                <div class="section">
+                    <h3>Servicios Desplegados</h3>
+                    <div id="servicesList">
+                        <div class="empty-state">
+                            <div style="font-size: 4rem; margin-bottom: 20px; opacity: 0.3;">⚙️</div>
+                            <p>No hay servicios desplegados. Despliega tu primera aplicación.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NETWORKING TAB -->
+            <div id="networking" class="tab-panel">
+                <div class="section networking-section">
+                    <h3>🌐 Gestión de Networking</h3>
+                    <p>Configura Load Balancers, servicios de red, políticas de seguridad y Ingress para tus
+                        aplicaciones.</p>
+
+                    <div class="network-metrics">
+                        <div class="network-metric-card">
+                            <div class="network-metric-value" id="totalLoadBalancers">0</div>
+                            <div class="network-metric-label">Load Balancers</div>
+                        </div>
+                        <div class="network-metric-card">
+                            <div class="network-metric-value" id="totalNetworkServices">0</div>
+                            <div class="network-metric-label">Network Services</div>
+                        </div>
+                        <div class="network-metric-card">
+                            <div class="network-metric-value" id="totalPolicies">0</div>
+                            <div class="network-metric-label">Network Policies</div>
+                        </div>
+                        <div class="network-metric-card">
+                            <div class="network-metric-value" id="totalIngresses">0</div>
+                            <div class="network-metric-label">Ingresses</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="networking-tabs">
+                    <button class="networking-tab active" onclick="showNetworkingTab('loadbalancers')">⚖️ Load
+                        Balancers</button>
+                    <button class="networking-tab" onclick="showNetworkingTab('services')">🌐 Services</button>
+                    <button class="networking-tab" onclick="showNetworkingTab('policies')">🔒 Policies</button>
+                    <button class="networking-tab" onclick="showNetworkingTab('ingress')">🌍 Ingress</button>
+                </div>
+
+                <!-- Load Balancers Tab -->
+                <div id="networking-loadbalancers" class="networking-content active">
+                    <div class="section">
+                        <h3>Crear Load Balancer</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nombre del Load Balancer</label>
+                                <input type="text" id="lbName" placeholder="ej: api-loadbalancer">
+                            </div>
+                            <div class="form-group">
+                                <label>Servicio de Destino</label>
+                                <select id="lbService">
+                                    <option value="">Seleccionar servicio...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo de Load Balancer</label>
+                                <select id="lbType">
+                                    <option value="LoadBalancer">LoadBalancer (Cloud)</option>
+                                    <option value="NodePort">NodePort</option>
+                                    <option value="ClusterIP">ClusterIP</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Puerto Externo</label>
+                                <input type="number" id="lbPort" value="80" min="1" max="65535">
+                            </div>
+                            <div class="form-group">
+                                <label>Puerto de Destino</label>
+                                <input type="number" id="lbTargetPort" value="8080" min="1" max="65535">
+                            </div>
+                        </div>
+                        <button class="btn" onclick="NetworkingManager.createLoadBalancer()">Crear Load
+                            Balancer</button>
+                    </div>
+                    <div class="section">
+                        <h3>Load Balancers Activos</h3>
+                        <div id="loadBalancersList">
+                            <div class="empty-state">
+                                <div style="font-size: 4rem; margin-bottom: 20px; opacity: 0.3;">⚖️</div>
+                                <p>No hay Load Balancers configurados. Crea uno para balancear tráfico.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Network Services Tab -->
+                <div id="networking-services" class="networking-content">
+                    <div class="section">
+                        <h3>Crear Servicio de Red</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nombre del Servicio</label>
+                                <input type="text" id="netServiceName" placeholder="ej: backend-service">
+                            </div>
+                            <div class="form-group">
+                                <label>Aplicación de Destino</label>
+                                <select id="netTargetService">
+                                    <option value="">Seleccionar aplicación...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo de Servicio</label>
+                                <select id="netServiceType">
+                                    <option value="ClusterIP">ClusterIP (Interno)</option>
+                                    <option value="NodePort">NodePort (Externo)</option>
+                                    <option value="LoadBalancer">LoadBalancer (Cloud)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Puerto del Servicio</label>
+                                <input type="number" id="netServicePort" value="80" min="1" max="65535">
+                            </div>
+                            <div class="form-group">
+                                <label>Puerto de Destino</label>
+                                <input type="number" id="netTargetPort" value="8080" min="1" max="65535">
+                            </div>
+                        </div>
+                        <button class="btn" onclick="NetworkingManager.createNetworkService()">Crear Servicio</button>
+                    </div>
+                    <div class="section">
+                        <h3>Servicios de Red</h3>
+                        <div id="networkServicesList">
+                            <div class="empty-state">
+                                <div style="font-size: 4rem; margin-bottom: 20px; opacity: 0.3;">🌐</div>
+                                <p>No hay servicios de red configurados.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Network Policies Tab -->
+                <div id="networking-policies" class="networking-content">
+                    <div class="section">
+                        <h3>Crear Network Policy</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nombre de la Política</label>
+                                <input type="text" id="policyName" placeholder="ej: deny-external-traffic">
+                            </div>
+                            <div class="form-group">
+                                <label>Servicio de Destino</label>
+                                <select id="policyTarget">
+                                    <option value="">Seleccionar servicio...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Acción</label>
+                                <select id="policyAction">
+                                    <option value="allow">Allow (Permitir)</option>
+                                    <option value="deny">Deny (Denegar)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Dirección</label>
+                                <select id="policyDirection">
+                                    <option value="ingress">Ingress (Entrada)</option>
+                                    <option value="egress">Egress (Salida)</option>
+                                    <option value="both">Both (Ambas)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>CIDR (opcional)</label>
+                                <input type="text" id="policyCIDR" placeholder="ej: 10.0.0.0/8">
+                            </div>
+                        </div>
+                        <button class="btn" onclick="NetworkingManager.createNetworkPolicy()">Crear Política</button>
+                    </div>
+                    <div class="section">
+                        <h3>Network Policies Activas</h3>
+                        <div id="networkPoliciesList">
+                            <div class="empty-state">
+                                <div style="font-size: 4rem; margin-bottom: 20px; opacity: 0.3;">🔒</div>
+                                <p>No hay políticas de red configuradas.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ingress Tab -->
+                <div id="networking-ingress" class="networking-content">
+                    <div class="section">
+                        <h3>Crear Ingress</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nombre del Ingress</label>
+                                <input type="text" id="ingressName" placeholder="ej: api-ingress">
+                            </div>
+                            <div class="form-group">
+                                <label>Host/Dominio</label>
+                                <input type="text" id="ingressHost" placeholder="ej: api.example.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Path</label>
+                                <input type="text" id="ingressPath" value="/" placeholder="ej: /api/v1">
+                            </div>
+                            <div class="form-group">
+                                <label>Servicio de Destino</label>
+                                <select id="ingressService">
+                                    <option value="">Seleccionar servicio...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Puerto del Servicio</label>
+                                <input type="number" id="ingressPort" value="80" min="1" max="65535">
+                            </div>
+                            <div class="form-group">
+                                <label>TLS/SSL</label>
+                                <input type="checkbox" id="ingressTLS"> Habilitar HTTPS
+                            </div>
+                        </div>
+                        <button class="btn" onclick="NetworkingManager.createIngress()">Crear Ingress</button>
+                    </div>
+                    <div class="section">
+                        <h3>Ingresses Activos</h3>
+                        <div id="ingressesList">
+                            <div class="empty-state">
+                                <div style="font-size: 4rem; margin-bottom: 20px; opacity: 0.3;">🌍</div>
+                                <p>No hay Ingresses configurados.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MONITORING TAB -->
+            <div id="monitoring" class="tab-panel">
+                <div class="section">
+                    <h3>Métricas del Cluster</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" id="totalClusters">0</div>
+                            <div class="metric-label">Clusters Activos</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="totalNodes">0</div>
+                            <div class="metric-label">Nodos Activos</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="totalPods">0</div>
+                            <div class="metric-label">Pods Ejecutándose</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="totalRequests">0</div>
+                            <div class="metric-label">Requests/segundo</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Uso de Recursos</h3>
+                    <div style="margin: 20px 0;">
+                        <label>CPU del Cluster</label>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="cpuUsage" style="width: 0%"></div>
+                        </div>
+                        <span id="cpuText">0%</span>
+                    </div>
+                    <div style="margin: 20px 0;">
+                        <label>Memoria del Cluster</label>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="memoryUsage" style="width: 0%"></div>
+                        </div>
+                        <span id="memoryText">0%</span>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Logs del Sistema</h3>
+                    <div class="logs-container" id="systemLogs">
+                        <div>[INFO] Sistema iniciado correctamente</div>
+                        <div>[INFO] Esperando actividad del cluster...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TESTING TAB -->
+            <div id="testing" class="tab-panel">
+                <div class="section">
+                    <h3>Configuración de Pruebas de Carga</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Servicio a Testear</label>
+                            <select id="testService">
+                                <option value="">Seleccionar servicio...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Requests por Segundo</label>
+                            <input type="number" id="requestsPerSecond" value="100" min="1" max="10000">
+                        </div>
+                        <div class="form-group">
+                            <label>Duración (segundos)</label>
+                            <input type="number" id="testDuration" value="60" min="1" max="600">
+                        </div>
+                        <div class="form-group">
+                            <label>Patrón de Carga</label>
+                            <select id="loadPattern">
+                                <option value="constant">Constante</option>
+                                <option value="ramp">Incrementar Gradualmente</option>
+                                <option value="spike">Picos de Carga</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="load-test-controls">
+                        <button class="btn" onclick="startLoadTest()">Iniciar Prueba</button>
+                        <button class="btn btn-secondary" onclick="pauseLoadTest()">Pausar</button>
+                        <button class="btn btn-danger" onclick="stopLoadTest()">Detener</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>📏 Topología de Infraestructura en Tiempo Real</h3>
+                    <p>Visualización interactiva de tu infraestructura de Kubernetes. Durante los stress tests, podrás
+                        ver el flujo de tráfico en tiempo real.</p>
+
+                    <div class="topology-controls" style="margin-bottom: 20px;">
+                        <button class="btn btn-secondary" onclick="TopologyManager.updateTopology()">Actualizar
+                            Topología</button>
+                        <button class="btn btn-secondary" onclick="TopologyManager.clearHighlight()">Limpiar
+                            Resaltados</button>
+                        <select id="topologyServiceFilter" onchange="filterTopologyByService()"
+                            style="margin-left: 10px; padding: 5px;">
+                            <option value="">Ver todos los servicios</option>
+                        </select>
+                    </div>
+
+                    <div class="topology-legend"
+                        style="display: flex; gap: 15px; margin-bottom: 15px; font-size: 12px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <div
+                                style="width: 12px; height: 12px; background: #ff6b6b; border-radius: 50%; border: 1px solid #fff;">
+                            </div>
+                            <span>Ingress</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <div
+                                style="width: 12px; height: 12px; background: #667eea; border-radius: 50%; border: 1px solid #fff;">
+                            </div>
+                            <span>Load Balancer</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <div
+                                style="width: 12px; height: 12px; background: #43e97b; border-radius: 50%; border: 1px solid #fff;">
+                            </div>
+                            <span>Network Service</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <div
+                                style="width: 12px; height: 12px; background: #f093fb; border-radius: 50%; border: 1px solid #fff;">
+                            </div>
+                            <span>Worker Node</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <div
+                                style="width: 12px; height: 12px; background: #4facfe; border-radius: 50%; border: 1px solid #fff;">
+                            </div>
+                            <span>Pod</span>
+                        </div>
+                    </div>
+
+                    <div id="topology-container"
+                        style="background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 8px; min-height: 600px; display: flex; align-items: center; justify-content: center;">
+                        <div style="text-align: center; color: #6c757d;">
+                            <div style="font-size: 3rem; margin-bottom: 10px;">🌐</div>
+                            <p>Crea clusters, nodos y servicios para ver la topología gráfica</p>
+                        </div>
+                    </div>
+
+                    <div class="topology-stats"
+                        style="margin-top: 15px; display: flex; gap: 20px; font-size: 12px; color: #6c757d;">
+                        <span>Nodos: <strong id="topology-node-count">0</strong></span>
+                        <span>Enlaces: <strong id="topology-link-count">0</strong></span>
+                        <span>Pods: <strong id="topology-pod-count">0</strong></span>
+                        <span>Load Balancers: <strong id="topology-lb-count">0</strong></span>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Resultados en Tiempo Real</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" id="currentRPS">0</div>
+                            <div class="metric-label">RPS Actual</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="avgResponseTime">0ms</div>
+                            <div class="metric-label">Tiempo Respuesta Promedio</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="activeReplicas">0</div>
+                            <div class="metric-label">Réplicas Activas</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="errorRate">0%</div>
+                            <div class="metric-label">Tasa de Error</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Logs de Testing</h3>
+                    <div class="logs-container" id="testLogs">
+                        <div>[INFO] Sistema de testing listo</div>
+                        <div>[INFO] Configura una prueba de carga para comenzar</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para guardar configuración -->
+    <div id="saveConfigModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">💾 Guardar Configuración</h2>
+                <span class="close" onclick="closeSaveConfigModal()">&times;</span>
+            </div>
+            <div class="form-group">
+                <label>Nombre de la Configuración</label>
+                <input type="text" id="configName" placeholder="ej: production-setup">
+            </div>
+            <div class="form-group">
+                <label>Descripción (opcional)</label>
+                <textarea id="configDescription" rows="3" placeholder="Describe esta configuración..."></textarea>
+            </div>
+            <div class="quick-actions">
+                <button class="btn btn-config-primary" onclick="ConfigurationsManager.saveConfiguration()">💾
+                    Guardar</button>
+                <button class="btn btn-secondary" onclick="closeSaveConfigModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para cargar configuración -->
+    <div id="loadConfigModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📂 Cargar Configuración</h2>
+                <span class="close" onclick="ConfigurationsManager.closeLoadModal()">&times;</span>
+            </div>
+            <div id="loadConfigContent">
+                <!-- El contenido se llena dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="src/js/state.js"></script>
+    <script src="src/js/utils.js"></script>
+    <script src="src/js/clusters.js"></script>
+    <script src="src/js/nodes.js"></script>
+    <script src="src/js/services.js"></script>
+    <script src="src/js/networking.js"></script>
+    <script src="src/js/configurations.js"></script>
+    <script src="src/js/monitoring.js"></script>
+    <script src="src/js/topology.js"></script>
+
+    <script>
+        // Función para cambiar tabs de networking
+        function showNetworkingTab(tabName) {
+            document.querySelectorAll('.networking-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.networking-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById('networking-' + tabName).classList.add('active');
+            event.target.classList.add('active');
+            NetworkingManager.updateServiceSelectors();
+        }
+
+        // Actualizar métricas de networking
+        function updateNetworkingMetrics() {
+            document.getElementById('totalLoadBalancers').textContent = NetworkingManager.loadBalancers.length;
+            document.getElementById('totalNetworkServices').textContent = NetworkingManager.services.length;
+            document.getElementById('totalPolicies').textContent = NetworkingManager.networkPolicies.length;
+            document.getElementById('totalIngresses').textContent = NetworkingManager.ingresses.length;
+        }
+
+        // Funciones para el módulo de configuraciones
+        function showSaveConfigModal() {
+            document.getElementById('saveConfigModal').style.display = 'block';
+        }
+
+        function closeSaveConfigModal() {
+            document.getElementById('saveConfigModal').style.display = 'none';
+            ConfigurationsManager.clearSaveForm();
+        }
+
+        function handleConfigImport(file) {
+            ConfigurationsManager.importConfiguration(file);
+        }
+
+        function exportAllConfigurations() {
+            const configs = ConfigurationsManager.getStoredConfigurations();
+            if (configs.length === 0) {
+                alert('No hay configuraciones para exportar');
+                return;
+            }
+
+            const allConfigs = {
+                metadata: {
+                    exportDate: new Date().toISOString(),
+                    version: ConfigurationsManager.CONFIGURATION_VERSION,
+                    totalConfigurations: configs.length
+                },
+                configurations: configs
+            };
+
+            const blob = new Blob([JSON.stringify(allConfigs, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `k8s-all-configurations-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            Logger.log(`${configs.length} configuraciones exportadas`, 'SUCCESS');
+        }
+
+        function clearAllConfigurations() {
+            const configs = ConfigurationsManager.getStoredConfigurations();
+            if (configs.length === 0) {
+                alert('No hay configuraciones para eliminar');
+                return;
+            }
+
+            if (confirm(`¿Estás seguro de eliminar TODAS las configuraciones guardadas (${configs.length})?
+
+Esta acción no se puede deshacer.`)) {
+                configs.forEach(config => {
+                    ConfigurationsManager.deleteConfiguration(config.metadata.name);
+                });
+                updateConfigurationsStats();
+                Logger.log('Todas las configuraciones han sido eliminadas', 'WARNING');
+            }
+        }
+
+        function updateConfigurationsStats() {
+            const stats = ConfigurationsManager.getStorageStats();
+            document.getElementById('totalConfigs').textContent = stats.totalConfigurations;
+            document.getElementById('storageUsed').textContent = stats.totalSize;
+
+            // Actualizar último guardado
+            const configs = ConfigurationsManager.getStoredConfigurations();
+            if (configs.length > 0) {
+                const lastConfig = configs[0]; // Ya están ordenados por fecha
+                const lastSaved = new Date(lastConfig.metadata.created).toLocaleDateString();
+                document.getElementById('lastSaved').textContent = lastSaved;
+            } else {
+                document.getElementById('lastSaved').textContent = 'Nunca';
+            }
+        }
+
+        // Función para filtrar topología por servicio
+        function filterTopologyByService() {
+            const select = document.getElementById('topologyServiceFilter');
+            const serviceId = select.value;
+
+            if (serviceId) {
+                TopologyManager.highlightServicePath(parseInt(serviceId));
+            } else {
+                TopologyManager.clearHighlight();
+            }
+        }
+
+        // Actualizar estadísticas de topología
+        function updateTopologyStats() {
+            if (typeof TopologyManager !== 'undefined' && TopologyManager.getTopologyStats) {
+                const stats = TopologyManager.getTopologyStats();
+                document.getElementById('topology-node-count').textContent = stats.totalNodes;
+                document.getElementById('topology-link-count').textContent = stats.totalLinks;
+                document.getElementById('topology-pod-count').textContent = stats.pods;
+                document.getElementById('topology-lb-count').textContent = stats.loadBalancers;
+            }
+        }
+
+        // Actualizar selector de servicios para topología
+        function updateTopologyServiceFilter() {
+            const select = document.getElementById('topologyServiceFilter');
+            if (select) {
+                const serviceOptions = appState.services.map(service => {
+                    const cluster = appState.clusters.find(c => c.id === service.clusterId);
+                    return `<option value="${service.id}">${service.name} (${cluster ? cluster.name : 'N/A'})</option>`;
+                }).join('');
+
+                select.innerHTML = '<option value="">Ver todos los servicios</option>' + serviceOptions;
+            }
+        }
+
+        // Extender función updateSelectOptions para incluir topología y configuraciones
+        if (typeof window.originalUpdateSelectOptions === 'undefined') {
+            const originalUpdateSelectOptions = UI.updateSelectOptions;
+            window.originalUpdateSelectOptions = originalUpdateSelectOptions;
+
+            UI.updateSelectOptions = function () {
+                originalUpdateSelectOptions.call(this);
+                if (typeof NetworkingManager !== 'undefined') {
+                    NetworkingManager.updateServiceSelectors();
+                    updateNetworkingMetrics();
+                }
+                updateConfigurationsStats();
+                // Actualizar topología y sus controles
+                updateTopologyServiceFilter();
+                if (typeof TopologyManager !== 'undefined' && TopologyManager.updateTopology) {
+                    TopologyManager.updateTopology();
+                }
+                updateTopologyStats();
+            };
+        }
+
+        // Extender función de start load test para incluir animación de tráfico
+        if (typeof window.originalStartLoadTestExtended === 'undefined') {
+            const originalStartLoadTest = window.startLoadTest;
+            window.originalStartLoadTestExtended = true;
+
+            window.startLoadTest = function () {
+                if (originalStartLoadTest) {
+                    originalStartLoadTest();
+                } else {
+                    TestingManager.start();
+                }
+
+                // Obtener el servicio seleccionado para el test
+                const serviceSelect = document.getElementById('testService');
+                const serviceId = serviceSelect.value;
+
+                if (serviceId && typeof TopologyManager !== 'undefined') {
+                    const service = appState.services.find(s => s.id === parseInt(serviceId));
+                    const rps = parseInt(document.getElementById('requestsPerSecond').value);
+
+                    if (service && TopologyManager.highlightServicePath) {
+                        // Resaltar el camino del servicio
+                        TopologyManager.highlightServicePath(service.id);
+
+                        // Iniciar animación de tráfico
+                        setTimeout(() => {
+                            if (TopologyManager.animateTrafficFlow) {
+                                TopologyManager.animateTrafficFlow(service, rps);
+                            }
+                        }, 1000);
+                    }
+                }
+            };
+        }
+
+        // Extender función de stop load test para limpiar animaciones
+        if (typeof window.originalStopLoadTestExtended === 'undefined') {
+            const originalStopLoadTest = window.stopLoadTest;
+            window.originalStopLoadTestExtended = true;
+
+            window.stopLoadTest = function () {
+                if (originalStopLoadTest) {
+                    originalStopLoadTest();
+                } else {
+                    TestingManager.stop();
+                }
+
+                // Limpiar animaciones de tráfico
+                if (typeof TopologyManager !== 'undefined') {
+                    if (TopologyManager.clearTrafficAnimations) {
+                        TopologyManager.clearTrafficAnimations();
+                    }
+                    if (TopologyManager.clearHighlight) {
+                        TopologyManager.clearHighlight();
+                    }
+                }
+            };
+        }
+
+        // Función para actualizar métricas visuales durante testing
+        function updateTopologyVisualMetrics() {
+            if (appState.isTestRunning && typeof TopologyManager !== 'undefined' && TopologyManager.updateVisualMetrics) {
+                TopologyManager.updateVisualMetrics();
+            }
+        }
+
+        // Cerrar modales al hacer clic fuera
+        window.onclick = function (event) {
+            const saveModal = document.getElementById('saveConfigModal');
+            const loadModal = document.getElementById('loadConfigModal');
+
+            if (event.target === saveModal) {
+                closeSaveConfigModal();
+            }
+            if (event.target === loadModal && typeof ConfigurationsManager !== 'undefined') {
+                ConfigurationsManager.closeLoadModal();
+            }
+        };
+
+        // Inicializar aplicación cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function () {
+            // Verificar que todos los módulos estén cargados
+            const requiredModules = ['UI', 'MonitoringManager', 'NetworkingManager', 'ConfigurationsManager'];
+            const missingModules = requiredModules.filter(module => typeof window[module] === 'undefined');
+
+            if (missingModules.length > 0) {
+                console.warn('Módulos faltantes:', missingModules);
+            }
+
+            // Inicializar UI
+            if (typeof UI !== 'undefined') {
+                UI.initialize();
+            }
+
+            // Inicializar monitoreo
+            if (typeof MonitoringManager !== 'undefined') {
+                MonitoringManager.startRealTimeMonitoring();
+            }
+
+            // Inicializar networking
+            if (typeof NetworkingManager !== 'undefined') {
+                NetworkingManager.updateServiceSelectors();
+                updateNetworkingMetrics();
+            }
+
+            // Inicializar configuraciones
+            if (typeof ConfigurationsManager !== 'undefined') {
+                updateConfigurationsStats();
+                ConfigurationsManager.updateConfigurationsList();
+            }
+
+            // Inicializar sistema de topología
+            if (typeof TopologyManager !== 'undefined') {
+                TopologyManager.initialize();
+                updateTopologyServiceFilter();
+            }
+
+            // Actualizar métricas visuales cada 3 segundos durante testing
+            setInterval(updateTopologyVisualMetrics, 3000);
+
+            // Logs de inicialización
+            if (typeof Logger !== 'undefined') {
+                Logger.log('Módulo de Networking cargado exitosamente 🎉', 'SUCCESS');
+                Logger.log('Sistema de topología gráfica inicializado 📊', 'SUCCESS');
+                Logger.log('Sistema de configuraciones listo 💾', 'SUCCESS');
+            }
+        });
+    </script>
+</body>
+
+</html>
