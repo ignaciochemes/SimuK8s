@@ -1,220 +1,292 @@
-/* K8s Simulator - Estilos para Networking */
+/* K8s Simulator - AWS-Compatible Networking Styles */
 
-/* Networking specific styles */
+/* Networking specific AWS styles que se integran con aws-theme.css */
+
+/* Networking section modifications */
 .networking-section {
-    background: linear-gradient(135deg, #667eea20, #764ba220);
-    border-left: 4px solid #667eea;
-    margin-bottom: 25px;
+    background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%);
+    border-left: 4px solid var(--aws-success);
+    color: var(--aws-text-primary);
 }
 
-.networking-tabs {
-    display: flex;
-    background: #f8f9fa;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    overflow: hidden;
+/* Network metrics específicos */
+.network-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--aws-spacing-m);
+    margin: var(--aws-spacing-l) 0;
 }
 
-.networking-tab {
-    flex: 1;
-    padding: 12px 16px;
-    background: #e9ecef;
-    border: none;
-    cursor: pointer;
+.network-metric-card {
+    background-color: var(--aws-white);
+    border: 1px solid var(--aws-border);
+    border-radius: var(--aws-border-radius-m);
+    padding: var(--aws-spacing-l);
+    text-align: center;
+    transition: all 0.2s ease;
+    border-left: 4px solid var(--aws-success);
+}
+
+.network-metric-card:hover {
+    border-color: var(--aws-orange);
+    box-shadow: var(--aws-shadow-s);
+}
+
+.network-metric-value {
+    font-size: var(--aws-font-size-xl);
     font-weight: 600;
-    transition: all 0.3s ease;
-    font-size: 0.9rem;
+    color: var(--aws-success);
+    margin-bottom: var(--aws-spacing-xs);
+    line-height: 1.2;
 }
 
-.networking-tab.active {
-    background: white;
-    color: #667eea;
+.network-metric-label {
+    font-size: var(--aws-font-size-xs);
+    color: var(--aws-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
 }
 
-.networking-tab:hover:not(.active) {
-    background: #dee2e6;
-}
-
-.networking-content {
-    display: none;
-}
-
-.networking-content.active {
-    display: block;
-}
-
-/* Load Balancer específicos */
+/* Load Balancer específicos con estilo AWS */
 .load-balancer-item {
-    border-left: 4px solid #28a745;
-    background: #28a74510;
+    border-left: 4px solid var(--aws-success);
+    background: var(--aws-white);
+    position: relative;
+}
+
+.load-balancer-item::before {
+    content: "⚖️";
+    position: absolute;
+    top: var(--aws-spacing-m);
+    right: var(--aws-spacing-m);
+    font-size: 1.2rem;
+    opacity: 0.7;
 }
 
 .load-balancer-item:hover {
-    border-left-color: #20c997;
-    transform: translateX(3px);
+    border-left-color: var(--aws-orange);
+    transform: translateY(-2px);
 }
 
 /* Network Service específicos */
 .network-service-item {
-    border-left: 4px solid #17a2b8;
-    background: #17a2b810;
+    border-left: 4px solid var(--aws-info);
+    background: var(--aws-white);
+    position: relative;
+}
+
+.network-service-item::before {
+    content: "🌐";
+    position: absolute;
+    top: var(--aws-spacing-m);
+    right: var(--aws-spacing-m);
+    font-size: 1.2rem;
+    opacity: 0.7;
 }
 
 .network-service-item:hover {
-    border-left-color: #20c997;
-    transform: translateX(3px);
+    border-left-color: var(--aws-orange);
+    transform: translateY(-2px);
 }
 
 /* Network Policy específicos */
 .network-policy-item {
-    border-left: 4px solid #ffc107;
-    background: #ffc10710;
+    border-left: 4px solid var(--aws-warning);
+    background: var(--aws-white);
+    position: relative;
+}
+
+.network-policy-item::before {
+    content: "🔒";
+    position: absolute;
+    top: var(--aws-spacing-m);
+    right: var(--aws-spacing-m);
+    font-size: 1.2rem;
+    opacity: 0.7;
 }
 
 .network-policy-item.policy-allow {
-    border-left-color: #28a745;
-    background: #28a74510;
+    border-left-color: var(--aws-success);
+}
+
+.network-policy-item.policy-allow::before {
+    content: "✅";
 }
 
 .network-policy-item.policy-deny {
-    border-left-color: #dc3545;
-    background: #dc354510;
+    border-left-color: var(--aws-error);
+}
+
+.network-policy-item.policy-deny::before {
+    content: "❌";
+}
+
+.network-policy-item:hover {
+    border-left-color: var(--aws-orange);
+    transform: translateY(-2px);
 }
 
 /* Ingress específicos */
 .ingress-item {
     border-left: 4px solid #6f42c1;
-    background: #6f42c110;
+    background: var(--aws-white);
+    position: relative;
+}
+
+.ingress-item::before {
+    content: "🌍";
+    position: absolute;
+    top: var(--aws-spacing-m);
+    right: var(--aws-spacing-m);
+    font-size: 1.2rem;
+    opacity: 0.7;
 }
 
 .ingress-item:hover {
-    border-left-color: #8B5CF6;
-    transform: translateX(3px);
+    border-left-color: var(--aws-orange);
+    transform: translateY(-2px);
 }
 
-/* Status indicators específicos para networking */
+/* Status indicators específicos para networking con tema AWS */
 .network-status {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 600;
+    gap: var(--aws-spacing-xs);
+    padding: var(--aws-spacing-xs) var(--aws-spacing-s);
+    border-radius: var(--aws-border-radius-s);
+    font-size: var(--aws-font-size-xs);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .network-status.active {
-    background: #d4edda;
-    color: #155724;
+    background-color: #DDF4E8;
+    color: var(--aws-success);
+    border: 1px solid #B8E6C8;
 }
 
 .network-status.inactive {
-    background: #f8d7da;
-    color: #721c24;
+    background-color: #FDEBEE;
+    color: var(--aws-error);
+    border: 1px solid #F8D0D7;
 }
 
 .network-status.pending {
-    background: #fff3cd;
-    color: #856404;
+    background-color: #FDF5E1;
+    color: var(--aws-warning);
+    border: 1px solid #F7E9C7;
 }
 
-/* IP Address styling */
+/* IP Address styling con tema AWS */
 .ip-address {
-    font-family: 'Courier New', monospace;
-    background: #f8f9fa;
-    padding: 2px 6px;
-    border-radius: 4px;
-    border: 1px solid #dee2e6;
-    font-size: 0.9rem;
+    font-family: "Courier New", monospace;
+    background-color: var(--aws-grey-light);
+    padding: var(--aws-spacing-xs) var(--aws-spacing-s);
+    border: 1px solid var(--aws-border);
+    border-radius: var(--aws-border-radius-s);
+    font-size: var(--aws-font-size-xs);
+    color: var(--aws-text-primary);
+    display: inline-block;
+    margin: var(--aws-spacing-xs) 0;
 }
 
-/* URL styling for ingress */
+/* URL styling for ingress con tema AWS */
 .ingress-url {
-    font-family: 'Courier New', monospace;
-    background: #e3f2fd;
-    padding: 4px 8px;
-    border-radius: 4px;
-    border: 1px solid #2196f3;
-    color: #1976d2;
+    font-family: "Courier New", monospace;
+    background-color: #E1F5FE;
+    padding: var(--aws-spacing-xs) var(--aws-spacing-s);
+    border: 1px solid var(--aws-info);
+    border-radius: var(--aws-border-radius-s);
+    color: var(--aws-info);
     text-decoration: none;
     display: inline-block;
-    margin: 2px 0;
+    margin: var(--aws-spacing-xs) 0;
+    font-size: var(--aws-font-size-xs);
+    transition: all 0.2s ease;
 }
 
 .ingress-url:hover {
-    background: #bbdefb;
+    background-color: #B3E5FC;
+    border-color: var(--aws-orange);
+    color: var(--aws-orange);
     text-decoration: underline;
 }
 
-/* Connectivity test animations */
+/* Connectivity test animations con tema AWS */
 .connectivity-test {
-    animation: pulse-network 2s infinite;
+    animation: aws-pulse-network 2s infinite;
 }
 
-@keyframes pulse-network {
+@keyframes aws-pulse-network {
     0% {
-        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+        box-shadow: 0 0 0 0 rgba(255, 153, 0, 0.7);
     }
     70% {
-        box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+        box-shadow: 0 0 0 10px rgba(255, 153, 0, 0);
     }
     100% {
-        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+        box-shadow: 0 0 0 0 rgba(255, 153, 0, 0);
     }
 }
 
-/* Endpoint status indicators */
+/* Endpoint status indicators con tema AWS */
 .endpoint-status {
     display: inline-block;
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    margin-right: 5px;
+    margin-right: var(--aws-spacing-xs);
 }
 
 .endpoint-ready {
-    background: #28a745;
+    background: var(--aws-success);
+    box-shadow: 0 0 4px rgba(46, 160, 67, 0.5);
 }
 
 .endpoint-not-ready {
-    background: #dc3545;
+    background: var(--aws-error);
+    box-shadow: 0 0 4px rgba(218, 13, 48, 0.5);
 }
 
 .endpoint-unknown {
-    background: #ffc107;
+    background: var(--aws-warning);
+    box-shadow: 0 0 4px rgba(209, 135, 0, 0.5);
 }
 
-/* Network topology visualization placeholder */
+/* Network topology visualization con tema AWS */
 .network-topology {
-    background: #f8f9fa;
-    border: 2px dashed #dee2e6;
-    border-radius: 8px;
-    padding: 40px;
+    background-color: var(--aws-grey-light);
+    border: 2px dashed var(--aws-border);
+    border-radius: var(--aws-border-radius-m);
+    padding: var(--aws-spacing-xxl);
     text-align: center;
-    color: #6c757d;
-    margin: 20px 0;
+    color: var(--aws-text-secondary);
+    margin: var(--aws-spacing-l) 0;
+    transition: all 0.2s ease;
 }
 
 .network-topology:hover {
-    border-color: #667eea;
-    background: #667eea05;
+    border-color: var(--aws-orange);
+    background-color: rgba(255, 153, 0, 0.05);
 }
 
-/* Traffic flow indicators */
+/* Traffic flow indicators con tema AWS */
 .traffic-flow {
     display: flex;
     align-items: center;
-    margin: 10px 0;
+    margin: var(--aws-spacing-s) 0;
 }
 
 .traffic-arrow {
     font-size: 1.2rem;
-    color: #667eea;
-    margin: 0 10px;
-    animation: flow 2s ease-in-out infinite;
+    color: var(--aws-orange);
+    margin: 0 var(--aws-spacing-s);
+    animation: aws-flow 2s ease-in-out infinite;
 }
 
-@keyframes flow {
+@keyframes aws-flow {
     0%, 100% {
         transform: translateX(0);
         opacity: 0.7;
@@ -225,82 +297,56 @@
     }
 }
 
-/* Load balancer algorithm indicator */
+/* Load balancer algorithm indicator con tema AWS */
 .lb-algorithm {
-    background: linear-gradient(45deg, #667eea, #764ba2);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
+    background: linear-gradient(45deg, var(--aws-orange), var(--aws-orange-dark));
+    color: var(--aws-white);
+    padding: var(--aws-spacing-xs) var(--aws-spacing-s);
+    border-radius: var(--aws-border-radius-s);
+    font-size: var(--aws-font-size-xs);
     font-weight: 600;
     text-transform: uppercase;
+    display: inline-block;
+    margin: var(--aws-spacing-xs) 0;
 }
 
-/* Network metrics cards */
-.network-metrics {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
-    margin: 20px 0;
-}
-
-.network-metric-card {
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-left: 4px solid #667eea;
-}
-
-.network-metric-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #667eea;
-    margin-bottom: 5px;
-}
-
-.network-metric-label {
-    color: #666;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Service mesh visualization */
+/* Service mesh visualization con tema AWS */
 .service-mesh {
     position: relative;
-    background: radial-gradient(circle at center, #667eea10 0%, transparent 70%);
-    border-radius: 12px;
-    padding: 20px;
-    margin: 20px 0;
+    background: radial-gradient(circle at center, rgba(255, 153, 0, 0.1) 0%, transparent 70%);
+    border-radius: var(--aws-border-radius-l);
+    padding: var(--aws-spacing-l);
+    margin: var(--aws-spacing-l) 0;
+    border: 1px solid var(--aws-border);
 }
 
 .mesh-node {
     display: inline-block;
     width: 60px;
     height: 60px;
-    background: #667eea;
+    background: var(--aws-orange);
     border-radius: 50%;
-    margin: 10px;
+    margin: var(--aws-spacing-s);
     position: relative;
     cursor: pointer;
     transition: all 0.3s ease;
+    border: 2px solid var(--aws-white);
+    box-shadow: var(--aws-shadow-s);
 }
 
 .mesh-node:hover {
     transform: scale(1.1);
-    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+    box-shadow: 0 0 20px rgba(255, 153, 0, 0.5);
 }
 
 .mesh-connection {
     position: absolute;
     height: 2px;
-    background: linear-gradient(90deg, #667eea, transparent, #667eea);
-    animation: data-flow 2s linear infinite;
+    background: linear-gradient(90deg, var(--aws-orange), transparent, var(--aws-orange));
+    animation: aws-data-flow 2s linear infinite;
 }
 
-@keyframes data-flow {
+@keyframes aws-data-flow {
     0% {
         background-position: -100% 0;
     }
@@ -309,107 +355,254 @@
     }
 }
 
-/* DNS resolution indicator */
+/* DNS resolution indicator con tema AWS */
 .dns-indicator {
     display: inline-flex;
     align-items: center;
-    background: #e8f5e8;
-    border: 1px solid #28a745;
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-size: 0.75rem;
-    color: #155724;
+    background: #E8F5E8;
+    border: 1px solid var(--aws-success);
+    border-radius: var(--aws-border-radius-s);
+    padding: var(--aws-spacing-xs) var(--aws-spacing-s);
+    font-size: var(--aws-font-size-xs);
+    color: var(--aws-success);
+    margin: var(--aws-spacing-xs) 0;
 }
 
 .dns-indicator::before {
     content: "🌐";
-    margin-right: 4px;
+    margin-right: var(--aws-spacing-xs);
 }
 
-/* Port forwarding styles */
+/* Port forwarding styles con tema AWS */
 .port-forward {
-    background: #fff3cd;
-    border: 1px solid #ffc107;
-    border-radius: 4px;
-    padding: 8px;
-    margin: 5px 0;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
+    background-color: #FDF5E1;
+    border: 1px solid var(--aws-warning);
+    border-radius: var(--aws-border-radius-s);
+    padding: var(--aws-spacing-s);
+    margin: var(--aws-spacing-xs) 0;
+    font-family: "Courier New", monospace;
+    font-size: var(--aws-font-size-xs);
+    color: var(--aws-warning);
 }
 
-/* Network security indicators */
+/* Network security indicators con tema AWS */
 .security-level {
     display: inline-block;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    padding: var(--aws-spacing-xs) var(--aws-spacing-s);
+    border-radius: var(--aws-border-radius-s);
+    font-size: var(--aws-font-size-xs);
+    font-weight: 500;
     text-transform: uppercase;
+    margin: var(--aws-spacing-xs) 0;
 }
 
 .security-high {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #28a745;
+    background: #DDF4E8;
+    color: var(--aws-success);
+    border: 1px solid var(--aws-success);
 }
 
 .security-medium {
-    background: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffc107;
+    background: #FDF5E1;
+    color: var(--aws-warning);
+    border: 1px solid var(--aws-warning);
 }
 
 .security-low {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #dc3545;
+    background: #FDEBEE;
+    color: var(--aws-error);
+    border: 1px solid var(--aws-error);
 }
 
-/* Responsive design for networking */
+/* Estados de error para networking con tema AWS */
+.network-error {
+    background: #FDEBEE;
+    border: 1px solid var(--aws-error);
+    color: var(--aws-error);
+    padding: var(--aws-spacing-s);
+    border-radius: var(--aws-border-radius-s);
+    margin: var(--aws-spacing-s) 0;
+    border-left: 4px solid var(--aws-error);
+}
+
+.network-warning {
+    background: #FDF5E1;
+    border: 1px solid var(--aws-warning);
+    color: var(--aws-warning);
+    padding: var(--aws-spacing-s);
+    border-radius: var(--aws-border-radius-s);
+    margin: var(--aws-spacing-s) 0;
+    border-left: 4px solid var(--aws-warning);
+}
+
+.network-success {
+    background: #DDF4E8;
+    border: 1px solid var(--aws-success);
+    color: var(--aws-success);
+    padding: var(--aws-spacing-s);
+    border-radius: var(--aws-border-radius-s);
+    margin: var(--aws-spacing-s) 0;
+    border-left: 4px solid var(--aws-success);
+}
+
+/* Networking tabs específicos con estilo AWS mejorado */
+.networking-tabs {
+    display: flex;
+    background: var(--aws-grey-light);
+    border: 1px solid var(--aws-border);
+    border-radius: var(--aws-border-radius-m);
+    margin-bottom: var(--aws-spacing-l);
+    overflow: hidden;
+    box-shadow: var(--aws-shadow-s);
+}
+
+.networking-tab {
+    flex: 1;
+    padding: var(--aws-spacing-m);
+    background: var(--aws-grey-light);
+    border: none;
+    border-right: 1px solid var(--aws-border);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: var(--aws-font-size-s);
+    color: var(--aws-text-secondary);
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.networking-tab:last-child {
+    border-right: none;
+}
+
+.networking-tab:hover:not(.active) {
+    background-color: var(--aws-grey);
+    color: var(--aws-text-primary);
+}
+
+.networking-tab.active {
+    background-color: var(--aws-white);
+    color: var(--aws-orange);
+    box-shadow: inset 0 -3px 0 0 var(--aws-orange);
+}
+
+.networking-content {
+    display: none;
+}
+
+.networking-content.active {
+    display: block;
+}
+
+/* Responsive design for networking con tema AWS */
 @media (max-width: 768px) {
     .networking-tabs {
         flex-direction: column;
+    }
+    
+    .networking-tab {
+        border-right: none;
+        border-bottom: 1px solid var(--aws-border);
+    }
+    
+    .networking-tab:last-child {
+        border-bottom: none;
     }
     
     .network-metrics {
         grid-template-columns: repeat(2, 1fr);
     }
     
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-    
     .mesh-node {
         width: 40px;
         height: 40px;
-        margin: 5px;
+        margin: var(--aws-spacing-xs);
+    }
+    
+    .traffic-flow {
+        flex-direction: column;
+        gap: var(--aws-spacing-xs);
     }
 }
 
-/* Error states for networking */
-.network-error {
-    background: #f8d7da;
-    border: 1px solid #dc3545;
-    color: #721c24;
-    padding: 10px;
-    border-radius: 4px;
-    margin: 10px 0;
+/* Mejoras específicas para la integración con D3.js y topología */
+.topology-svg {
+    background-color: var(--aws-white);
+    border: 1px solid var(--aws-border);
+    border-radius: var(--aws-border-radius-m);
 }
 
-.network-warning {
-    background: #fff3cd;
-    border: 1px solid #ffc107;
-    color: #856404;
-    padding: 10px;
-    border-radius: 4px;
-    margin: 10px 0;
+.topology-node {
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.network-success {
-    background: #d4edda;
-    border: 1px solid #28a745;
-    color: #155724;
-    padding: 10px;
-    border-radius: 4px;
-    margin: 10px 0;
+.topology-node:hover {
+    filter: brightness(1.2);
+    transform: scale(1.05);
+}
+
+.topology-link {
+    stroke: var(--aws-border-dark);
+    stroke-width: 2;
+    transition: all 0.2s ease;
+}
+
+.topology-link.active {
+    stroke: var(--aws-orange);
+    stroke-width: 3;
+    animation: aws-pulse-link 2s infinite;
+}
+
+@keyframes aws-pulse-link {
+    0%, 100% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Etiquetas y textos de topología */
+.topology-label {
+    font-family: var(--aws-font-family);
+    font-size: var(--aws-font-size-xs);
+    fill: var(--aws-text-primary);
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.topology-metric {
+    font-family: var(--aws-font-family);
+    font-size: 10px;
+    fill: var(--aws-text-secondary);
+}
+
+/* Indicadores de performance de red */
+.network-performance {
+    display: flex;
+    gap: var(--aws-spacing-s);
+    align-items: center;
+    margin: var(--aws-spacing-s) 0;
+}
+
+.latency-indicator {
+    padding: var(--aws-spacing-xs) var(--aws-spacing-s);
+    border-radius: var(--aws-border-radius-s);
+    font-size: var(--aws-font-size-xs);
+    font-weight: 500;
+}
+
+.latency-low {
+    background: #DDF4E8;
+    color: var(--aws-success);
+}
+
+.latency-medium {
+    background: #FDF5E1;
+    color: var(--aws-warning);
+}
+
+.latency-high {
+    background: #FDEBEE;
+    color: var(--aws-error);
 }

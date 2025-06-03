@@ -1,0 +1,818 @@
+/* K8s Simulator - AWS Console Theme */
+
+:root {
+    /* AWS Color Palette */
+    --aws-orange: #FF9900;
+    --aws-orange-dark: #CC7A00;
+    --aws-orange-light: #FFB84D;
+    --aws-blue: #232F3E;
+    --aws-blue-light: #37475A;
+    --aws-grey: #EAEDED;
+    --aws-grey-dark: #879196;
+    --aws-grey-light: #F2F3F3;
+    --aws-white: #FFFFFF;
+    --aws-text-primary: #232F3E;
+    --aws-text-secondary: #535B62;
+    --aws-border: #D5DBDB;
+    --aws-border-dark: #AEB6C0;
+    --aws-success: #2EA043;
+    --aws-warning: #D18700;
+    --aws-error: #DA0D30;
+    --aws-info: #0073BB;
+    
+    /* AWS Spacing */
+    --aws-spacing-xs: 4px;
+    --aws-spacing-s: 8px;
+    --aws-spacing-m: 16px;
+    --aws-spacing-l: 24px;
+    --aws-spacing-xl: 32px;
+    --aws-spacing-xxl: 48px;
+    
+    /* AWS Typography */
+    --aws-font-family: "Amazon Ember", "Helvetica Neue", Roboto, Arial, sans-serif;
+    --aws-font-size-xs: 12px;
+    --aws-font-size-s: 14px;
+    --aws-font-size-m: 16px;
+    --aws-font-size-l: 18px;
+    --aws-font-size-xl: 20px;
+    --aws-font-size-xxl: 24px;
+    
+    /* AWS Shadows */
+    --aws-shadow-s: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    --aws-shadow-m: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    --aws-shadow-l: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+    
+    /* AWS Border Radius */
+    --aws-border-radius-s: 2px;
+    --aws-border-radius-m: 4px;
+    --aws-border-radius-l: 8px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--aws-font-family);
+    background-color: var(--aws-grey-light);
+    color: var(--aws-text-primary);
+    line-height: 1.5;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--aws-spacing-l);
+    background-color: var(--aws-grey-light);
+}
+
+/* Header - AWS Style */
+.header {
+    background-color: var(--aws-blue);
+    color: var(--aws-white);
+    padding: var(--aws-spacing-l) var(--aws-spacing-xl);
+    margin: calc(-1 * var(--aws-spacing-l)) calc(-1 * var(--aws-spacing-l)) var(--aws-spacing-l) calc(-1 * var(--aws-spacing-l));
+    border-bottom: 3px solid var(--aws-orange);
+}
+
+.header h1 {
+    font-size: var(--aws-font-size-xxl);
+    font-weight: 400;
+    margin-bottom: var(--aws-spacing-s);
+    display: flex;
+    align-items: center;
+    gap: var(--aws-spacing-m);
+}
+
+.header h1::before {
+    content: "☸️";
+    font-size: 28px;
+}
+
+.header p {
+    font-size: var(--aws-font-size-s);
+    color: var(--aws-grey);
+    font-weight: 300;
+    max-width: 800px;
+}
+
+/* Tabs - AWS CloudFormation Style */
+.tabs {
+    display: flex;
+    background-color: var(--aws-white);
+    border: 1px solid var(--aws-border);
+    border-radius: var(--aws-border-radius-m) var(--aws-border-radius-m) 0 0;
+    overflow: hidden;
+    box-shadow: var(--aws-shadow-s);
+}
+
+.tab {
+    flex: 1;
+    padding: var(--aws-spacing-m) var(--aws-spacing-l);
+    background-color: var(--aws-grey-light);
+    border: none;
+    border-right: 1px solid var(--aws-border);
+    cursor: pointer;
+    font-size: var(--aws-font-size-s);
+    font-weight: 500;
+    color: var(--aws-text-secondary);
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.tab:last-child {
+    border-right: none;
+}
+
+.tab:hover:not(.active) {
+    background-color: var(--aws-grey);
+    color: var(--aws-text-primary);
+}
+
+.tab.active {
+    background-color: var(--aws-white);
+    color: var(--aws-orange);
+    border-bottom: 2px solid var(--aws-orange);
+    box-shadow: 0 -1px 0 0 var(--aws-orange);
+}
+
+.tab-content {
+    background-color: var(--aws-white);
+    border: 1px solid var(--aws-border);
+    border-top: none;
+    border-radius: 0 0 var(--aws-border-radius-m) var(--aws-border-radius-m);
+    padding: var(--aws-spacing-xl);
+    box-shadow: var(--aws-shadow-s);
+    min-height: 600px;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* Sections - AWS Panel Style */
+.section {
+    background-color: var(--aws-white);
+    border: 1px solid var(--aws-border);
+    border-radius: var(--aws-border-radius-m);
+    padding: var(--aws-spacing-l);
+    margin-bottom: var(--aws-spacing-l);
+    box-shadow: var(--aws-shadow-s);
+}
+
+.section h3 {
+    color: var(--aws-text-primary);
+    font-size: var(--aws-font-size-l);
+    font-weight: 500;
+    margin-bottom: var(--aws-spacing-m);
+    padding-bottom: var(--aws-spacing-s);
+    border-bottom: 1px solid var(--aws-border);
+}
+
+/* AWS Form Styles */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--aws-spacing-l);
+    margin-bottom: var(--aws-spacing-l);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: var(--aws-font-size-s);
+    font-weight: 500;
+    color: var(--aws-text-primary);
+    margin-bottom: var(--aws-spacing-xs);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: var(--aws-spacing-s) var(--aws-spacing-m);
+    border: 1px solid var(--aws-border);
+    border-radius: var(--aws-border-radius-s);
+    font-size: var(--aws-font-size-s);
+    font-family: var(--aws-font-family);
+    transition: all 0.2s ease;
+    background-color: var(--aws-white);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--aws-orange);
+    box-shadow: 0 0 0 2px rgba(255, 153, 0, 0.2);
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+    border-color: var(--aws-border-dark);
+}
+
+/* AWS Buttons */
+.btn {
+    padding: var(--aws-spacing-s) var(--aws-spacing-l);
+    border: 1px solid var(--aws-orange);
+    border-radius: var(--aws-border-radius-s);
+    background-color: var(--aws-orange);
+    color: var(--aws-white);
+    font-size: var(--aws-font-size-s);
+    font-weight: 500;
+    font-family: var(--aws-font-family);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--aws-spacing-s);
+    margin: var(--aws-spacing-xs);
+}
+
+.btn:hover {
+    background-color: var(--aws-orange-dark);
+    border-color: var(--aws-orange-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--aws-shadow-s);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.btn-secondary {
+    background-color: var(--aws-white);
+    color: var(--aws-text-primary);
+    border-color: var(--aws-border-dark);
+}
+
+.btn-secondary:hover {
+    background-color: var(--aws-grey-light);
+    border-color: var(--aws-text-secondary);
+}
+
+.btn-danger {
+    background-color: var(--aws-error);
+    border-color: var(--aws-error);
+}
+
+.btn-danger:hover {
+    background-color: #B80C28;
+    border-color: #B80C28;
+}
+
+.btn-success {
+    background-color: var(--aws-success);
+    border-color: var(--aws-success);
+}
+
+.btn-success:hover {
+    background-color: #258A39;
+    border-color: #258A39;
+}
+
+.btn-config-primary {
+    background-color: var(--aws-info);
+    border-color: var(--aws-info);
+}
+
+.btn-config-primary:hover {
+    background-color: #0056A3;
+    border-color: #0056A3;
+}
+
+.btn-config-secondary {
+    background-color: var(--aws-success);
+    border-color: var(--aws-success);
+}
+
+.btn-config-secondary:hover {
+    background-color: #258A39;
+    border-color: #258A39;
+}
+
+/* AWS Card/Item Styles */
+.cluster-item,
+.node-item,
+.service-item,
+.load-balancer-item,
+.network-service-item,
+.network-policy-item,
+.ingress-item {
+    background-color: var(--aws-white);
+    border: 1px solid var(--aws-border);
+    border-radius: var(--aws-border-radius-m);
+    padding: var(--aws-spacing-l);
+    margin-bottom: var(--aws-spacing-m);
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.cluster-item:hover,
+.node-item:hover,
+.service-item:hover,
+.load-balancer-item:hover,
+.network-service-item:hover,
+.network-policy-item:hover,
+.ingress-item:hover {
+    border-color: var(--aws-orange);
+    box-shadow: var(--aws-shadow-m);
+    transform: translateY(-2px);
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--aws-spacing-m);
+}
+
+.item-title {
+    font-size: var(--aws-font-size-m);
+    font-weight: 500;
+    color: var(--aws-text-primary);
+    margin: 0;
+}
+
+/* AWS Status Badges */
+.item-status,
+.network-status {
+    padding: var(--aws-spacing-xs) var(--aws-spacing-s);
+    border-radius: var(--aws-border-radius-s);
+    font-size: var(--aws-font-size-xs);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-running,
+.network-status.active {
+    background-color: #DDF4E8;
+    color: var(--aws-success);
+    border: 1px solid #B8E6C8;
+}
+
+.status-pending,
+.network-status.pending {
+    background-color: #FDF5E1;
+    color: var(--aws-warning);
+    border: 1px solid #F7E9C7;
+}
+
+.status-stopped,
+.network-status.inactive {
+    background-color: #FDEBEE;
+    color: var(--aws-error);
+    border: 1px solid #F8D0D7;
+}
+
+.status-active {
+    background-color: #E1F5FE;
+    color: var(--aws-info);
+    border: 1px solid #B3E5FC;
+}
+
+/* AWS Metrics Cards */
+.metrics-grid,
+.network-metrics,
+.config-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--aws-spacing-m);
+    margin: var(--aws-spacing-l) 0;
+}
+
+.metric-card,
+.network-metric-card,
+.config-stat-card {
+    background-color: var(--aws-white);
+    border: 1px solid var(--aws-border);
+    border-radius: var(--aws-border-radius-m);
+    padding: var(--aws-spacing-l);
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.metric-card:hover,
+.network-metric-card:hover,
+.config-stat-card:hover {
+    border-color: var(--aws-orange);
+    box-shadow: var(--aws-shadow-s);
+}
+
+.metric-value,
+.network-metric-value,
+.config-stat-value {
+    font-size: var(--aws-font-size-xl);
+    font-weight: 600;
+    color: var(--aws-orange);
+    margin-bottom: var(--aws-spacing-xs);
+    line-height: 1.2;
+}
+
+.metric-label,
+.network-metric-label,
+.config-stat-label {
+    font-size: var(--aws-font-size-xs);
+    color: var(--aws-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+/* AWS Progress Bars */
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--aws-grey-light);
+    border-radius: var(--aws-border-radius-s);
+    overflow: hidden;
+    margin: var(--aws-spacing-s) 0;
+    border: 1px solid var(--aws-border);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--aws-orange), var(--aws-orange-light));
+    transition: width 0.3s ease;
+    border-radius: var(--aws-border-radius-s);
+}
+
+/* AWS Logs */
+.logs-container {
+    background-color: var(--aws-blue);
+    color: #00FF41;
+    font-family: "Courier New", monospace;
+    font-size: var(--aws-font-size-xs);
+    padding: var(--aws-spacing-l);
+    border-radius: var(--aws-border-radius-m);
+    border: 1px solid var(--aws-border-dark);
+    max-height: 300px;
+    overflow-y: auto;
+    margin: var(--aws-spacing-m) 0;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.logs-container div {
+    margin-bottom: var(--aws-spacing-xs);
+    line-height: 1.4;
+}
+
+/* AWS Empty States */
+.empty-state {
+    text-align: center;
+    padding: var(--aws-spacing-xxl);
+    color: var(--aws-text-secondary);
+    background-color: var(--aws-grey-light);
+    border: 2px dashed var(--aws-border);
+    border-radius: var(--aws-border-radius-m);
+    margin: var(--aws-spacing-m) 0;
+}
+
+.empty-state div:first-child {
+    font-size: 3rem;
+    margin-bottom: var(--aws-spacing-m);
+    opacity: 0.3;
+}
+
+/* AWS Modals */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(35, 47, 62, 0.8);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: var(--aws-white);
+    margin: 5% auto;
+    padding: 0;
+    border-radius: var(--aws-border-radius-m);
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: var(--aws-shadow-l);
+    border: 1px solid var(--aws-border);
+}
+
+.modal-header {
+    background-color: var(--aws-grey-light);
+    padding: var(--aws-spacing-l) var(--aws-spacing-xl);
+    border-bottom: 1px solid var(--aws-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    font-size: var(--aws-font-size-l);
+    font-weight: 500;
+    color: var(--aws-text-primary);
+    margin: 0;
+}
+
+.close {
+    color: var(--aws-text-secondary);
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s ease;
+    padding: var(--aws-spacing-s);
+}
+
+.close:hover {
+    color: var(--aws-orange);
+}
+
+/* AWS Loading Spinner */
+.aws-spinner {
+    border: 3px solid var(--aws-grey-light);
+    border-top: 3px solid var(--aws-orange);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: aws-spin 1s linear infinite;
+    display: inline-block;
+    margin-right: var(--aws-spacing-s);
+}
+
+@keyframes aws-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* File input AWS style */
+.file-input-wrapper {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.file-input-wrapper input[type=file] {
+    position: absolute;
+    left: -9999px;
+}
+
+.file-input-button {
+    padding: var(--aws-spacing-s) var(--aws-spacing-l);
+    background-color: var(--aws-white);
+    color: var(--aws-text-primary);
+    border: 1px solid var(--aws-border-dark);
+    border-radius: var(--aws-border-radius-s);
+    cursor: pointer;
+    font-size: var(--aws-font-size-s);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-family: var(--aws-font-family);
+}
+
+.file-input-button:hover {
+    background-color: var(--aws-grey-light);
+    border-color: var(--aws-orange);
+}
+
+/* Networking specific AWS styles */
+.networking-tabs {
+    display: flex;
+    background: var(--aws-grey-light);
+    border: 1px solid var(--aws-border);
+    border-radius: var(--aws-border-radius-m);
+    margin-bottom: var(--aws-spacing-l);
+    overflow: hidden;
+}
+
+.networking-tab {
+    flex: 1;
+    padding: var(--aws-spacing-m);
+    background: var(--aws-grey-light);
+    border: none;
+    border-right: 1px solid var(--aws-border);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: var(--aws-font-size-s);
+    color: var(--aws-text-secondary);
+    transition: all 0.2s ease;
+}
+
+.networking-tab:last-child {
+    border-right: none;
+}
+
+.networking-tab:hover:not(.active) {
+    background-color: var(--aws-grey);
+    color: var(--aws-text-primary);
+}
+
+.networking-tab.active {
+    background-color: var(--aws-white);
+    color: var(--aws-orange);
+    box-shadow: inset 0 -2px 0 0 var(--aws-orange);
+}
+
+.networking-content {
+    display: none;
+}
+
+.networking-content.active {
+    display: block;
+}
+
+/* AWS Service-specific styles */
+.configurations-section {
+    background: linear-gradient(135deg, #E1F5FE 0%, #F3E5F5 100%);
+    border-left: 4px solid var(--aws-info);
+    color: var(--aws-text-primary);
+}
+
+.networking-section {
+    background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%);
+    border-left: 4px solid var(--aws-success);
+}
+
+/* AWS Control specific styles */
+.load-test-controls {
+    display: flex;
+    gap: var(--aws-spacing-m);
+    align-items: center;
+    flex-wrap: wrap;
+    margin: var(--aws-spacing-l) 0;
+    padding: var(--aws-spacing-l);
+    background-color: var(--aws-grey-light);
+    border-radius: var(--aws-border-radius-m);
+    border: 1px solid var(--aws-border);
+}
+
+.config-actions {
+    display: flex;
+    gap: var(--aws-spacing-m);
+    margin-bottom: var(--aws-spacing-l);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* AWS Code/Monospace elements */
+.ip-address,
+.ingress-url,
+.port-forward {
+    font-family: "Courier New", monospace;
+    background-color: var(--aws-grey-light);
+    padding: var(--aws-spacing-xs) var(--aws-spacing-s);
+    border: 1px solid var(--aws-border);
+    border-radius: var(--aws-border-radius-s);
+    font-size: var(--aws-font-size-xs);
+    color: var(--aws-text-primary);
+}
+
+.ingress-url {
+    color: var(--aws-info);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.ingress-url:hover {
+    background-color: #E1F5FE;
+    border-color: var(--aws-info);
+}
+
+/* AWS Topology Container */
+#topology-container {
+    background-color: var(--aws-grey-light);
+    border: 2px dashed var(--aws-border);
+    border-radius: var(--aws-border-radius-m);
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--aws-text-secondary);
+    text-align: center;
+    margin: var(--aws-spacing-l) 0;
+}
+
+.topology-controls {
+    margin-bottom: var(--aws-spacing-l);
+    display: flex;
+    gap: var(--aws-spacing-m);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.topology-legend {
+    display: flex;
+    gap: var(--aws-spacing-m);
+    margin-bottom: var(--aws-spacing-m);
+    font-size: var(--aws-font-size-xs);
+    flex-wrap: wrap;
+    color: var(--aws-text-secondary);
+}
+
+.topology-stats {
+    margin-top: var(--aws-spacing-m);
+    display: flex;
+    gap: var(--aws-spacing-l);
+    font-size: var(--aws-font-size-xs);
+    color: var(--aws-text-secondary);
+    flex-wrap: wrap;
+}
+
+/* Indicadores de estado específicos para servicios */
+.load-balancer-item {
+    border-left: 4px solid var(--aws-success);
+}
+
+.network-service-item {
+    border-left: 4px solid var(--aws-info);
+}
+
+.network-policy-item {
+    border-left: 4px solid var(--aws-warning);
+}
+
+.network-policy-item.policy-allow {
+    border-left-color: var(--aws-success);
+}
+
+.network-policy-item.policy-deny {
+    border-left-color: var(--aws-error);
+}
+
+.ingress-item {
+    border-left: 4px solid #6f42c1;
+}
+
+/* Animaciones específicas */
+.animation-pulse {
+    animation: aws-pulse 2s infinite;
+}
+
+@keyframes aws-pulse {
+    0% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(255, 153, 0, 0.7);
+    }
+    50% {
+        opacity: 0.8;
+        box-shadow: 0 0 0 10px rgba(255, 153, 0, 0);
+    }
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(255, 153, 0, 0);
+    }
+}
+
+/* AWS Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: var(--aws-spacing-m);
+    }
+    
+    .header {
+        padding: var(--aws-spacing-m);
+        margin: calc(-1 * var(--aws-spacing-m)) calc(-1 * var(--aws-spacing-m)) var(--aws-spacing-m) calc(-1 * var(--aws-spacing-m));
+    }
+    
+    .tabs {
+        flex-direction: column;
+    }
+    
+    .tab {
+        border-right: none;
+        border-bottom: 1px solid var(--aws-border);
+    }
+    
+    .tab:last-child {
+        border-bottom: none;
+    }
+    
+    .form-grid,
+    .metrics-grid,
+    .network-metrics,
+    .config-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        margin: 2% auto;
+        width: 95%;
+    }
+}
