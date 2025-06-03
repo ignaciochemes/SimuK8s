@@ -90,10 +90,10 @@ if (typeof window.NodeManager === 'undefined') {
         // Renderizar elemento de nodo
         renderNodeItem(node) {
             const cluster = appState.clusters.find(c => c.id === node.clusterId);
-            const podDistribution = Utils.calculatePodDistribution(node.clusterId);
-            const podsInNode = podDistribution[node.id] || 0;
+            const podsOnNode = this.getPodsOnNode(node); // 🆕 NUEVO: Pods reales
             const healthStatus = this.getNodeHealth(node);
             const estimatedCost = Utils.calculateEstimatedCost({ type: 'node', nodeType: node.type });
+            const nodeSpecs = this.getNodeSpecsNumeric(node.type);
 
             return `
             <div class="node-item">
@@ -103,7 +103,9 @@ if (typeof window.NodeManager === 'undefined') {
                 </div>
                 <p><strong>Cluster:</strong> ${cluster ? cluster.name : 'N/A'} | <strong>Tipo:</strong> ${node.type}</p>
                 <p><strong>Zona:</strong> ${node.az} | <strong>Estado de salud:</strong> ${healthStatus}</p>
-                <p><strong>Pods ejecutándose:</strong> ${podsInNode} | <strong>Costo:</strong> $${estimatedCost.toFixed(3)}/hora</p>
+                <p><strong>Pods ejecutándose:</strong> ${podsOnNode.length} | <strong>Costo:</strong> ${estimatedCost.toFixed(3)}/hora</p>
+                <p><strong>Especificaciones:</strong> ${nodeSpecs.cpuCores} vCPU, ${nodeSpecs.memoryMB}MB RAM</p>
+                ${node.podsInfo ? `<p><strong>Recursos asignados:</strong> ${node.podsInfo.cpuAllocated}% CPU, ${node.podsInfo.memoryAllocated}MB RAM</p>` : ''}
                 
                 <div style="margin: 10px 0;">
                     <label>CPU: ${Utils.formatPercentage(node.cpuUsage)}</label>
@@ -265,17 +267,89 @@ Costos:
             document.getElementById('nodeAZ').selectedIndex = 0;
         },
 
-        // Actualizar métricas de nodos en tiempo real
+        // 🆕 NUEVO: Calcular uso real de CPU y memoria basado en pods
+        calculateRealResourceUsage(node) {
+            // Obtener especificaciones del nodo
+            const nodeSpecs = this.getNodeSpecsNumeric(node.type);
+            const nodeBaseCpuUsage = 10; // CPU base del sistema
+            const nodeBaseMemoryUsage = 15; // Memoria base del sistema
+            
+            // Encontrar todos los pods ejecutándose en este nodo
+            const podsOnNode = this.getPodsOnNode(node);
+            
+            let totalCpuUsage = nodeBaseCpuUsage;
+            let totalMemoryUsage = nodeBaseMemoryUsage;
+            
+            podsOnNode.forEach(pod => {
+                // CPU: convertir de milicores a porcentaje
+                const podCpuPercentage = (pod.service.cpuLimit / 1000) / nodeSpecs.cpuCores * 100;
+                totalCpuUsage += podCpuPercentage;
+                
+                // Memoria: convertir MB a porcentaje
+                const podMemoryPercentage = (pod.service.ramLimit / nodeSpecs.memoryMB) * 100;
+                totalMemoryUsage += podMemoryPercentage;
+            });
+            
+            // Agregar variación realista
+            totalCpuUsage += (Math.random() - 0.5) * 10; // ±5% variación
+            totalMemoryUsage += (Math.random() - 0.5) * 5; // ±2.5% variación
+            
+            // Limitar entre 0 y 100
+            node.cpuUsage = Math.max(0, Math.min(100, totalCpuUsage));
+            node.memoryUsage = Math.max(0, Math.min(100, totalMemoryUsage));
+            
+            // Agregar información de pods para debugging
+            node.podsInfo = {
+                count: podsOnNode.length,
+                cpuAllocated: podsOnNode.reduce((sum, pod) => sum + pod.service.cpuLimit, 0),
+                memoryAllocated: podsOnNode.reduce((sum, pod) => sum + pod.service.ramLimit, 0)
+            };
+        },
+
+        // 🆕 NUEVO: Obtener especificaciones numéricas del nodo
+        getNodeSpecsNumeric(nodeType) {
+            const specs = {
+                't3.medium': { cpuCores: 2, memoryMB: 4096 },
+                't3.large': { cpuCores: 2, memoryMB: 8192 },
+                'c5.large': { cpuCores: 2, memoryMB: 4096 },
+                'm5.large': { cpuCores: 2, memoryMB: 8192 },
+                'm5.xlarge': { cpuCores: 4, memoryMB: 16384 }
+            };
+            return specs[nodeType] || { cpuCores: 2, memoryMB: 4096 };
+        },
+
+        // 🆕 NUEVO: Obtener pods ejecutándose en un nodo específico
+        getPodsOnNode(node) {
+            const pods = [];
+            const clusterServices = appState.services.filter(s => s.clusterId === node.clusterId);
+            const clusterNodes = appState.nodes.filter(n => n.clusterId === node.clusterId);
+            const nodeIndex = clusterNodes.findIndex(n => n.id === node.id);
+            
+            if (nodeIndex === -1 || clusterNodes.length === 0) return pods;
+            
+            clusterServices.forEach(service => {
+                // Distribuir pods entre nodos disponibles
+                for (let i = 0; i < service.currentReplicas; i++) {
+                    const assignedNodeIndex = i % clusterNodes.length;
+                    if (assignedNodeIndex === nodeIndex) {
+                        pods.push({
+                            id: `pod-${service.id}-${i}`,
+                            service: service,
+                            replicaIndex: i
+                        });
+                    }
+                }
+            });
+            
+            return pods;
+        },
+
+        // 🆕 MEJORADO: Actualizar métricas de nodos basadas en pods reales
         updateMetrics() {
             appState.nodes.forEach(node => {
-                if (node.status === 'running' && !appState.isTestRunning) {
-                    // Variación natural de métricas
-                    node.cpuUsage += (Math.random() - 0.5) * 5;
-                    node.memoryUsage += (Math.random() - 0.5) * 3;
-
-                    // Mantener dentro de límites realistas
-                    node.cpuUsage = Math.max(5, Math.min(95, node.cpuUsage));
-                    node.memoryUsage = Math.max(10, Math.min(90, node.memoryUsage));
+                if (node.status === 'running') {
+                    // Calcular uso real basado en pods
+                    this.calculateRealResourceUsage(node);
                 }
             });
 

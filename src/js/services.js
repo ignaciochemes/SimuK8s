@@ -14,6 +14,7 @@ if (typeof window.ServiceManager === 'undefined') {
             const ramLimit = parseInt(document.getElementById('ramLimit').value);
             const responseTime = parseInt(document.getElementById('responseTime').value);
             const throughput = parseInt(document.getElementById('throughput').value);
+            const podStartupTime = parseInt(document.getElementById('podStartupTime').value); // 🆕 NUEVO
 
             // Validaciones
             if (!clusterId) {
@@ -66,7 +67,10 @@ if (typeof window.ServiceManager === 'undefined') {
                 ramLimit: ramLimit,
                 responseTime: responseTime,
                 throughput: throughput,
-                status: 'running'
+                podStartupTime: podStartupTime, // 🆕 NUEVO: Tiempo de arranque
+                status: 'running',
+                pendingPods: 0, // 🆕 NUEVO: Pods pendientes de arranque
+                startingPods: [] // 🆕 NUEVO: Array de pods iniciando
             };
 
             StateManager.addService(service);
@@ -153,7 +157,7 @@ if (typeof window.ServiceManager === 'undefined') {
                 </div>
                 <p><strong>Cluster:</strong> ${cluster ? cluster.name : 'N/A'} | <strong>Tecnología:</strong> ${service.tech}</p>
                 <p><strong>Tipo:</strong> ${service.type} | <strong>Estado de salud:</strong> ${healthStatus}</p>
-                <p><strong>Réplicas:</strong> ${service.currentReplicas}/${service.maxReplicas} | <strong>CPU Límite:</strong> ${service.cpuLimit}%</p>
+                <p><strong>Réplicas:</strong> ${this.getPodStatus(service)} | <strong>CPU Límite:</strong> ${service.cpuLimit}%</p>
                 <p><strong>RAM Límite:</strong> ${service.ramLimit}MB | <strong>Throughput:</strong> ${service.throughput} req/s</p>
                 <p><strong>Tiempo Respuesta:</strong> ${service.responseTime}ms | <strong>Uptime:</strong> ${uptime}</p>
                 <p><strong>Requests:</strong> ${service.requests.toLocaleString()} | <strong>Errores:</strong> ${service.errors.toLocaleString()}</p>
@@ -179,7 +183,17 @@ if (typeof window.ServiceManager === 'undefined') {
 
         // Renderizar métricas del servicio
         renderServiceMetrics(service) {
-            const errorRate = service.requests > 0 ? ((service.errors / service.requests) * 100) : 0;
+            // 🆕 ARREGLO: Calcular tasa de error de forma más simple y efectiva
+            let currentErrorRate = 0;
+            if (appState.isTestRunning && service.requests > 0) {
+                // Durante el test: errores por segundo vs requests por segundo
+                currentErrorRate = Math.min(100, (service.errors / Math.max(service.requests * 60, 1)) * 100);
+            } else if (!appState.isTestRunning && service.errors > 0) {
+                // Después del test: rate based en requests acumulados
+                const totalRequests = Math.max(service.requests * 1000, 1); // Estimación
+                currentErrorRate = Math.min(100, (service.errors / totalRequests) * 100);
+            }
+            
             const currentLoad = service.requests > 0 ? Math.min(100, (service.requests / service.throughput) * 100) : 0;
 
             return `
@@ -191,9 +205,9 @@ if (typeof window.ServiceManager === 'undefined') {
             </div>
             
             <div style="margin: 10px 0;">
-                <label>Tasa de error: ${Utils.formatPercentage(errorRate)}</label>
+                <label>Tasa de error: ${Utils.formatPercentage(currentErrorRate)}</label>
                 <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${Math.min(errorRate, 100)}%; background: ${errorRate > 5 ? '#dc3545' : '#28a745'}"></div>
+                    <div class="progress-fill" style="width: ${Math.min(currentErrorRate, 100)}%; background: ${currentErrorRate > 5 ? '#dc3545' : '#28a745'}"></div>
                 </div>
             </div>
         `;
@@ -296,23 +310,91 @@ Auto-escalado:
             }
         },
 
-        // Simular auto-escalado durante carga
+        // 🆕 NUEVO: Simular auto-escalado con tiempo de arranque realista
         simulateAutoScaling(service, requestsPerSecond) {
-            const loadPerReplica = requestsPerSecond / service.currentReplicas;
+            const loadPerReplica = requestsPerSecond / (service.currentReplicas + service.pendingPods);
             const shouldScaleUp = loadPerReplica > service.throughput * 0.8;
-            const shouldScaleDown = loadPerReplica < service.throughput * 0.3 && service.currentReplicas > service.minReplicas;
+            const shouldScaleDown = loadPerReplica < service.throughput * 0.3 && 
+                                  (service.currentReplicas + service.pendingPods) > service.minReplicas;
 
-            if (shouldScaleUp && service.currentReplicas < service.maxReplicas) {
-                service.currentReplicas++;
-                Logger.testLog(`[AUTO-SCALE] Escalando ${service.name} a ${service.currentReplicas} réplicas`, 'INFO');
+            if (shouldScaleUp && (service.currentReplicas + service.pendingPods) < service.maxReplicas) {
+                // Iniciar proceso de arranque de nuevo pod
+                this.startNewPod(service);
+                Logger.testLog(`[AUTO-SCALE] Iniciando nuevo pod para ${service.name} (startup: ${service.podStartupTime}s)`, 'INFO');
                 return true;
-            } else if (shouldScaleDown) {
+            } else if (shouldScaleDown && service.currentReplicas > service.minReplicas) {
+                // Solo reducir pods que ya están corriendo (no los que están iniciando)
                 service.currentReplicas--;
                 Logger.testLog(`[AUTO-SCALE] Reduciendo ${service.name} a ${service.currentReplicas} réplicas`, 'INFO');
                 return true;
             }
 
             return false;
+        },
+
+        // 🆕 NUEVO: Iniciar proceso de arranque de un nuevo pod
+        startNewPod(service) {
+            const podId = `${service.name}-${Date.now()}`;
+            const startTime = Date.now();
+            
+            // Agregar a pods pendientes
+            service.pendingPods++;
+            service.startingPods.push({
+                id: podId,
+                startTime: startTime,
+                expectedReady: startTime + (service.podStartupTime * 1000)
+            });
+
+            Logger.testLog(`[POD-START] Pod ${podId} iniciando... (${service.podStartupTime}s para estar listo)`, 'INFO');
+
+            // Programar finalización del arranque
+            setTimeout(() => {
+                this.completePodStartup(service, podId);
+            }, service.podStartupTime * 1000);
+        },
+
+        // 🆕 NUEVO: Completar arranque de pod
+        completePodStartup(service, podId) {
+            // Encontrar y remover el pod de la lista de iniciando
+            const podIndex = service.startingPods.findIndex(p => p.id === podId);
+            if (podIndex !== -1) {
+                service.startingPods.splice(podIndex, 1);
+                service.pendingPods = Math.max(0, service.pendingPods - 1);
+                service.currentReplicas++;
+                
+                Logger.testLog(`[POD-READY] Pod ${podId} listo y disponible para tráfico`, 'SUCCESS');
+                
+                // Actualizar visualizaciones
+                this.updateList();
+                ClusterManager.updateList();
+                MonitoringManager.updateMetrics();
+                
+                // 🆕 NUEVO: Actualizar topología en tiempo real
+                if (typeof TopologyManager !== 'undefined' && TopologyManager.updateTopologyRealTime) {
+                    TopologyManager.updateTopologyRealTime();
+                }
+            }
+        },
+
+        // 🆕 NUEVO: Obtener estado detallado de pods
+        getPodStatus(service) {
+            const runningPods = service.currentReplicas;
+            const pendingPods = service.pendingPods;
+            const totalTargetPods = runningPods + pendingPods;
+            
+            if (pendingPods > 0) {
+                const oldestStarting = service.startingPods.reduce((oldest, pod) => {
+                    return pod.startTime < oldest.startTime ? pod : oldest;
+                }, service.startingPods[0]);
+                
+                if (oldestStarting) {
+                    const elapsed = Math.floor((Date.now() - oldestStarting.startTime) / 1000);
+                    const remaining = Math.max(0, service.podStartupTime - elapsed);
+                    return `${runningPods}/${totalTargetPods} (${pendingPods} iniciando, ~${remaining}s)`;
+                }
+            }
+            
+            return `${runningPods}/${service.maxReplicas}`;
         },
 
         // Simular errores bajo carga
@@ -350,6 +432,7 @@ Auto-escalado:
             document.getElementById('ramLimit').value = '512';
             document.getElementById('responseTime').value = '100';
             document.getElementById('throughput').value = '100';
+            document.getElementById('podStartupTime').value = '30'; // 🆕 NUEVO
         }
     };
 

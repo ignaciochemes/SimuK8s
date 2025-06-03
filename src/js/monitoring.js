@@ -201,7 +201,7 @@ if (typeof window.MonitoringManager === 'undefined') {
                 this.simulateNetworkingTraffic(test, currentRPS);
 
                 // Actualizar métricas del servicio
-                test.service.requests += currentRPS;
+                test.service.requests = currentRPS; // 🆕 ARREGLO: Asignar directamente, no acumular
                 this.testMetrics.totalRequests += currentRPS;
 
                 // Simular auto-escalado
@@ -444,6 +444,12 @@ if (typeof window.MonitoringManager === 'undefined') {
             }
 
             if (appState.isTestRunning) {
+                // 🆕 NUEVO: Iniciar proceso de scale-down
+                const testedService = this.currentTest ? this.currentTest.service : null;
+                if (testedService) {
+                    this.startScaleDown(testedService);
+                }
+
                 // Generar reporte final
                 this.generateTestReport();
 
@@ -460,6 +466,108 @@ if (typeof window.MonitoringManager === 'undefined') {
                 MonitoringManager.updateMetrics();
                 Logger.testLog('Prueba de carga finalizada', 'SUCCESS');
             }
+        },
+
+        // 🆕 NUEVO: Iniciar proceso de scale-down gradual
+        startScaleDown(service) {
+            if (service.currentReplicas <= service.minReplicas) {
+                Logger.testLog(`[SCALE-DOWN] Servicio ${service.name} ya está en réplicas mínimas`, 'INFO');
+                // 🆕 NUEVO: Resetear métricas incluso si no hay scale-down
+                this.normalizeServiceMetrics(service);
+                return;
+            }
+
+            const initialReplicas = service.currentReplicas;
+            const targetReplicas = service.minReplicas;
+            const replicasToRemove = initialReplicas - targetReplicas;
+
+            Logger.testLog(`[SCALE-DOWN] Iniciando reducción de ${service.name}: ${initialReplicas} -> ${targetReplicas} réplicas`, 'INFO');
+
+            // 🆕 NUEVO: Iniciar normalización de métricas inmediatamente
+            this.normalizeServiceMetrics(service);
+
+            // Reducir gradualmente cada 5 segundos
+            let currentStep = 0;
+            const scaleDownInterval = setInterval(() => {
+                if (currentStep >= replicasToRemove || service.currentReplicas <= service.minReplicas) {
+                    clearInterval(scaleDownInterval);
+                    Logger.testLog(`[SCALE-DOWN] Completado: ${service.name} tiene ${service.currentReplicas} réplicas`, 'SUCCESS');
+                    
+                    // Actualizar visualizaciones
+                    ServiceManager.updateList();
+                    NodeManager.updateList();
+                    ClusterManager.updateList();
+                    MonitoringManager.updateMetrics();
+                    
+                    // 🆕 NUEVO: Actualizar topología
+                    if (typeof TopologyManager !== 'undefined' && TopologyManager.updateTopologyRealTime) {
+                        TopologyManager.updateTopologyRealTime();
+                    }
+                    return;
+                }
+
+                // Reducir una réplica
+                service.currentReplicas--;
+                currentStep++;
+
+                Logger.testLog(`[SCALE-DOWN] Pod terminado: ${service.name} ahora tiene ${service.currentReplicas} réplicas`, 'INFO');
+
+                // Actualizar visualizaciones
+                ServiceManager.updateList();
+                NodeManager.updateList();
+                
+                // Recalcular métricas de nodos
+                if (typeof NodeManager !== 'undefined' && NodeManager.updateMetrics) {
+                    NodeManager.updateMetrics();
+                }
+            }, 5000); // Cada 5 segundos
+        },
+
+        // 🆕 NUEVO: Normalizar métricas del servicio después del test
+        normalizeServiceMetrics(service) {
+            Logger.testLog(`[NORMALIZE] Normalizando métricas de ${service.name}...`, 'INFO');
+            
+            // Detener flujo de requests inmediatamente
+            const originalRequests = service.requests;
+            service.requests = 0; // Reset requests por segundo
+            
+            // Iniciar reducción gradual de tasa de error
+            const originalErrorRate = service.requests > 0 ? (service.errors / originalRequests * 100) : 0;
+            
+            // Normalizar errores gradualmente
+            let normalizeStep = 0;
+            const normalizeInterval = setInterval(() => {
+                normalizeStep++;
+                
+                // Reducir errores gradualmente (simula recovery)
+                if (service.errors > 0) {
+                    const errorReduction = Math.ceil(service.errors * 0.1); // 10% reducción por paso
+                    service.errors = Math.max(0, service.errors - errorReduction);
+                }
+                
+                // Simular requests de healthcheck mínimos
+                const healthcheckRequests = Math.floor(Math.random() * 5); // 0-5 requests
+                service.requests = healthcheckRequests;
+                
+                // Detener después de 10 pasos (50 segundos)
+                if (normalizeStep >= 10) {
+                    clearInterval(normalizeInterval);
+                    
+                    // Estado final normalizado
+                    service.requests = Math.floor(Math.random() * 3); // 0-2 requests base
+                    service.errors = Math.floor(service.errors * 0.1); // Errores mínimos residuales
+                    
+                    Logger.testLog(`[NORMALIZE] Completado: ${service.name} normalizado`, 'SUCCESS');
+                    
+                    // Actualizar visualizaciones finales
+                    ServiceManager.updateList();
+                    return;
+                }
+                
+                // Actualizar cada paso
+                ServiceManager.updateList();
+                
+            }, 5000); // Cada 5 segundos
         },
 
         // Generar reporte de prueba

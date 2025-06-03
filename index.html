@@ -24,9 +24,9 @@
             <button class="tab" onclick="showTab('nodes')">🖥️ Nodos</button>
             <button class="tab" onclick="showTab('services')">⚙️ Servicios</button>
             <button class="tab" onclick="showTab('networking')">🌐 Networking</button>
-            <button class="tab" onclick="showTab('configurations')">💾 Configuraciones</button>
             <button class="tab" onclick="showTab('monitoring')">📊 Monitoreo</button>
             <button class="tab" onclick="showTab('testing')">🧪 Testing</button>
+            <button class="tab" onclick="showTab('configurations')">💾 Configuraciones</button>
         </div>
 
         <div class="tab-content">
@@ -235,6 +235,10 @@
                         <div class="form-group">
                             <label>Capacidad de Procesamiento (req/s)</label>
                             <input type="number" id="throughput" value="100" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>🆕 Tiempo de Arranque de Pod (segundos)</label>
+                            <input type="number" id="podStartupTime" value="30" min="5" max="300">
                         </div>
                     </div>
                     <button class="btn" onclick="deployService()">Desplegar Servicio</button>
