@@ -139,6 +139,23 @@ if (typeof window.Utils === 'undefined') {
 
         // Calcular costo estimado
         calculateEstimatedCost(resource) {
+            // Esta función ahora será complementada por CostManager
+            if (typeof CostManager !== 'undefined' && CostManager.calculateResourceCost) {
+                try {
+                    if (resource.type === 'cluster') {
+                        const cost = CostManager.calculateResourceCost('cluster', resource.id);
+                        return cost ? cost.total : 0;
+                    } else if (resource.type === 'node') {
+                        const cost = CostManager.calculateResourceCost('node', resource.id);
+                        return cost ? cost.hourly : 0;
+                    }
+                } catch (error) {
+                    console.warn('Error calculando costo con CostManager:', error);
+                    // Continuar con fallback
+                }
+            }
+            
+            // Fallback a la implementación original
             const costPerHour = {
                 't3.medium': 0.0416,
                 't3.large': 0.0832,
